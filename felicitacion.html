@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Feliz Navidad 2026 · Lobo de Sistemas UNIFRANZ</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Mountains+of+Christmas:wght@700&family=Poppins:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-verde-osc: #030f08;
+    --verde-bosque: #134e2c;
+    --verde-card: rgba(12, 38, 22, 0.85);
+    --rojo-navidad: #e32636;
+    --rojo-oscuro: #900c1f;
+    --dorado: #ffd700;
+    --naranja-unifranz: #ff8c00;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+  body, html {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #020805; font-family: 'Poppins', sans-serif; color: #fff;
+    display: flex; justify-content: center; align-items: center;
+  }
+
+  /* Contenedor vertical optimizado para celular con los colores de la tarjeta principal */
+  .pantalla {
+    position: relative; 
+    width: 100%; 
+    max-width: 420px; 
+    height: 100%; 
+    max-height: 932px;
+    background: radial-gradient(circle at top, var(--verde-bosque) 0%, #082414 70%, var(--bg-verde-osc) 100%);
+    overflow: hidden;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8), 0 0 25px rgba(227, 38, 54, 0.2);
+    border-left: 1px solid rgba(255, 215, 0, 0.2);
+    border-right: 1px solid rgba(255, 215, 0, 0.2);
+  }
+
+  canvas#fondo, canvas#fuegos {
+    position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
+  }
+  canvas#fondo { z-index: 1; }
+  canvas#fuegos { z-index: 15; }
+
+  /* Guirnalda superior acorde a la paleta */
+  .guirnalda {
+    position: absolute; top: -6px; left: 0; right: 0; height: 28px;
+    display: flex; justify-content: space-around; z-index: 12; pointer-events: none;
+    border-top: 3px solid var(--verde-bosque);
+  }
+  .guirnalda i {
+    width: 10px; height: 16px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: var(--c); box-shadow: 0 0 10px var(--c);
+    animation: parpadeo 1.4s infinite alternate;
+    animation-delay: calc(var(--n) * 0.12s);
+  }
+  .pantalla.pausa .guirnalda i,
+  .pantalla.pausa .esc * { animation-play-state: paused !important; }
+
+  /* Escenas */
+  .esc {
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.8s ease, transform 0.8s ease;
+    transform: scale(0.96); z-index: 5; padding: 24px; text-align: center;
+  }
+  .esc.activa { opacity: 1; pointer-events: auto; transform: scale(1); }
+  .centro { z-index: 6; width: 100%; display: flex; flex-direction: column; align-items: center; }
+
+  /* ESCENA 0: Consola */
+  .circ-draw { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.35; }
+  .circ-draw .dib {
+    fill: none; stroke: var(--naranja-unifranz); stroke-width: 2.5;
+    stroke-dasharray: 1; stroke-dashoffset: 1;
+  }
+  .esc.activa .dib { animation: trazar 2.5s ease forwards; }
+  .circ-draw .nod { fill: var(--dorado); opacity: 0; }
+  .esc.activa .nod { animation: aparecer 0.5s ease forwards calc(var(--d) * 0.4s); }
+
+  .consola {
+    font-family: 'Fira Code', monospace; color: #4ade80; font-size: 0.85rem;
+    margin-bottom: 16px; display: inline-block; background: rgba(0,0,0,0.5);
+    padding: 8px 14px; border-radius: 8px; border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+  .cursor { animation: blink 0.8s infinite; color: var(--naranja-unifranz); }
+  .uni {
+    font-size: clamp(2.5rem, 12vw, 3.8rem); font-weight: 900; letter-spacing: 3px;
+    background: linear-gradient(90deg, #fff, var(--naranja-unifranz), #fff);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    opacity: 0; transform: translateY(20px);
+  }
+  .esc.activa .uni { animation: subir 0.8s ease 0.8s forwards; }
+  .sub {
+    font-size: 0.95rem; letter-spacing: 3px; color: #93c5fd;
+    margin-top: 8px; opacity: 0;
+  }
+  .esc.activa .sub { animation: subir 0.8s ease 1.3s forwards; }
+
+  /* ESCENA 1: Lobo de Sistemas con identidad Unifranz */
+  .insignia {
+    position: relative; width: 160px; height: 160px; margin: 0 auto 16px;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .anillo {
+    position: absolute; inset: 0; border-radius: 50%;
+    border: 3px dashed var(--naranja-unifranz); border-top-color: var(--rojo-navidad); border-bottom-color: #22c55e;
+    animation: girar 12s linear infinite;
+  }
+  .logo { width: 130px; height: 130px; animation: flotar 3s ease-in-out infinite; }
+  .lobo-t {
+    font-size: 1.6rem; font-weight: 900; color: #fff;
+    text-shadow: 0 4px 20px rgba(255, 140, 0, 0.6); letter-spacing: 1px;
+  }
+  .pill {
+    display: inline-block; margin-top: 10px; padding: 6px 18px; border-radius: 50px;
+    background: linear-gradient(135deg, var(--rojo-navidad), var(--rojo-oscuro)); border: 2px solid var(--dorado);
+    font-weight: 700; letter-spacing: 2px; font-size: 0.85rem; color: var(--dorado);
+    box-shadow: 0 4px 10px rgba(227, 38, 54, 0.4);
+  }
+
+  /* ESCENA 2: Feliz Navidad */
+  .arboles-container {
+    display: flex; justify-content: space-between; width: 100%; position: absolute; top: 18%; padding: 0 20px; pointer-events: none; z-index: 4;
+  }
+  .arbol { width: 70px; opacity: 0.9; }
+  .arbol .l { animation: parpadeo 1s infinite alternate; }
+  .arbol .estrella { transform-origin: 60px 14px; animation: pulsar 1.5s infinite alternate; }
+
+  .tit {
+    font-family: 'Mountains of Christmas', cursive;
+    font-size: clamp(3.2rem, 14vw, 4.8rem); line-height: 1.05;
+    color: var(--rojo-navidad); text-shadow: 0 0 20px rgba(227, 38, 54, 0.7), 0 0 5px var(--dorado);
+    margin-top: 20px;
+  }
+  .tit .fila { display: block; }
+  .tit span { display: inline-block; opacity: 0; transform: translateY(-20px) scale(0.5); }
+  .esc.activa .tit span {
+    animation: letraIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation-delay: calc(var(--i) * 0.07s);
+  }
+  .deseo {
+    font-size: 1.1rem; color: var(--dorado); margin-top: 14px;
+    font-weight: 500; opacity: 0;
+  }
+  .esc.activa .deseo { animation: subir 0.8s ease 1.2s forwards; }
+
+  /* ESCENA 3: Dedicatoria con estilo tarjeta */
+  .flota { position: absolute; font-size: 1.8rem; opacity: 0.75; animation: flotar 4s ease-in-out infinite; }
+  .f1 { top: 12%; left: 10%; } .f2 { top: 15%; right: 10%; animation-delay: 1s; }
+  .f3 { bottom: 15%; left: 12%; animation-delay: 2s; } .f4 { bottom: 18%; right: 10%; animation-delay: 0.5s; }
+
+  .card-msg {
+    background: var(--verde-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 2px solid var(--rojo-navidad);
+    border-radius: 24px;
+    padding: 24px 18px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(227, 38, 54, 0.25);
+  }
+  .nombre { font-size: 1.8rem; font-weight: 700; color: #fff; }
+  .nombre em { font-style: normal; color: var(--naranja-unifranz); }
+  .linea {
+    width: 80px; height: 3px; background: linear-gradient(90deg, var(--rojo-navidad), var(--dorado), var(--verde));
+    margin: 10px auto 14px; border-radius: 3px;
+  }
+  .msg {
+    font-size: 0.88rem; line-height: 1.5; color: #f1f8f3;
+    margin-bottom: 8px; opacity: 0; transform: translateY(15px);
+  }
+  .msg b { color: var(--dorado); }
+  .esc.activa .m1 { animation: subir 0.7s ease 0.4s forwards; }
+  .esc.activa .m2 { animation: subir 0.7s ease 1.8s forwards; }
+  .esc.activa .m3 { animation: subir 0.7s ease 3.4s forwards; }
+  .esc.activa .m4 { animation: subir 0.7s ease 5.0s forwards; }
+
+  /* ESCENA 4: Regalo y Almohada */
+  #e4 { justify-content: center; gap: 12px; padding: 15px; }
+  .rayos {
+    position: absolute; width: 320px; height: 320px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, transparent 70%);
+    animation: pulsar 2s infinite alternate; pointer-events: none;
+  }
+  .regalo-g { position: relative; width: 90px; height: 80px; margin-bottom: -5px; }
+  .cuerpo-g {
+    width: 100%; height: 62px; background: var(--rojo-navidad); border-radius: 5px;
+    position: absolute; bottom: 0; border: 2px solid #991b1b;
+  }
+  .tapa-g {
+    width: 98px; height: 20px; background: #ff4d4d; border-radius: 4px;
+    position: absolute; top: 0; left: -4px; z-index: 2; transition: transform 1s ease;
+  }
+  .esc.activa .tapa-g { animation: abrirCaja 1.2s ease 1s forwards; }
+  .cinta-g { position: absolute; left: 50%; transform: translateX(-50%); width: 14px; height: 100%; background: var(--dorado); }
+
+  .almohada { width: 175px; z-index: 3; opacity: 0; transform: scale(0.4) translateY(30px); }
+  .esc.activa .almohada { animation: salirRegalo 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1.5s forwards; }
+
+  .info {
+    background: var(--verde-card); border: 1px solid rgba(255, 215, 0, 0.4);
+    padding: 12px 16px; border-radius: 20px; width: 100%; max-width: 340px; text-align: center;
+    z-index: 4; opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .esc.activa .info { animation: subir 0.8s ease 2.4s forwards; }
+  .info h4 { color: var(--dorado); font-size: 0.95rem; margin-bottom: 4px; }
+  .info p { font-size: 0.78rem; color: #f1f8f3; margin-bottom: 8px; line-height: 1.4; font-weight: 300; }
+  .qr { display: inline-flex; flex-direction: column; align-items: center; background: #fff; padding: 6px; border-radius: 8px; }
+  .qr canvas { width: 65px; height: 65px; }
+  .qr span { color: #0B2E5B; font-size: 0.6rem; font-weight: 700; margin-top: 3px; }
+
+  /* ESCENA 5: Cierre */
+  .mini { position: relative; width: 110px; height: 110px; margin: 0 auto 12px; display: flex; justify-content: center; align-items: center; }
+  .mini .logo { width: 90px; height: 90px; }
+  .fin1 { font-size: 1.2rem; margin-bottom: 4px; }
+  .fin1 em { color: var(--dorado); font-style: normal; font-weight: 700; }
+  .fin2 { font-size: 0.85rem; color: #93c5fd; letter-spacing: 1px; }
+  .fin3 {
+    font-family: 'Mountains of Christmas', cursive; font-size: 2.4rem; color: var(--rojo-navidad);
+    margin: 8px 0; text-shadow: 0 0 12px rgba(227, 38, 54, 0.6);
+  }
+  .paleta { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+  .paleta i { width: 14px; height: 14px; border-radius: 50%; background: var(--c); border: 1px solid #fff; }
+
+  /* Pantalla de inicio */
+  .inicio {
+    position: absolute; inset: 0; background: rgba(3, 15, 8, 0.96); backdrop-filter: blur(12px);
+    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    z-index: 30; padding: 24px; transition: opacity 0.5s ease, visibility 0.5s;
+  }
+  .inicio.fuera { opacity: 0; visibility: hidden; pointer-events: none; }
+  .inicio h1 { font-family: 'Mountains of Christmas', cursive; font-size: 2.8rem; color: var(--rojo-navidad); text-shadow: 0 0 15px rgba(227,38,54,0.5); margin-bottom: 8px; }
+  .inicio h1 em { color: var(--dorado); font-style: normal; }
+  .inicio p { color: #f1f8f3; margin-bottom: 24px; font-size: 0.88px; padding: 0 10px; font-weight: 300; }
+
+  .btn-g {
+    background: linear-gradient(135deg, var(--verde-bosque), #1e5631); color: #fff;
+    border: 2px solid var(--dorado); padding: 12px 24px; border-radius: 50px;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer; margin: 6px; width: 100%; max-width: 260px;
+    box-shadow: 0 6px 20px rgba(19, 78, 44, 0.6); transition: transform 0.2s;
+  }
+  .btn-g:active { transform: scale(0.95); }
+  .btn-g.sec { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); box-shadow: none; }
+
+  .repetir {
+    position: absolute; bottom: 65px; left: 50%; transform: translateX(-50%);
+    z-index: 25; opacity: 0; pointer-events: none; transition: opacity 0.4s; width: 80%; max-width: 220px;
+    background: linear-gradient(135deg, var(--rojo-navidad), var(--rojo-oscuro)); border: 2px solid var(--dorado);
+  }
+  .repetir.ver { opacity: 1; pointer-events: auto; }
+
+  /* Barra de controles */
+  .controles {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 50px;
+    background: linear-gradient(to top, rgba(3, 15, 8, 0.95), transparent);
+    display: flex; align-items: center; gap: 8px; padding: 0 12px;
+    z-index: 20; opacity: 0.4; transition: opacity 0.3s;
+  }
+  .pantalla:hover .controles, .pantalla.ver .controles, .pantalla.pausa .controles { opacity: 1; }
+  .controles button {
+    background: none; border: none; color: #fff; font-size: 1rem; cursor: pointer; padding: 4px;
+  }
+  .controles button.on { color: var(--dorado); }
+  .barra {
+    flex: 1; height: 5px; background: rgba(255, 255, 255, 0.25); border-radius: 4px;
+    position: relative; cursor: pointer;
+  }
+  .barra b { display: block; height: 100%; width: 0%; background: var(--dorado); border-radius: 4px; }
+  .tiempo { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: #cbd5e1; }
+
+  /* Keyframes */
+  @keyframes parpadeo { from { opacity: 0.45; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
+  @keyframes blink { 50% { opacity: 0; } }
+  @keyframes trazar { to { stroke-dashoffset: 0; } }
+  @keyframes aparecer { to { opacity: 1; } }
+  @keyframes subir { to { opacity: 1; transform: translateY(0); } }
+  @keyframes girar { to { transform: rotate(360deg); } }
+  @keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes pulsar { from { transform: scale(0.95); } to { transform: scale(1.06); } }
+  @keyframes letraIn { to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes abrirCaja { to { transform: translateY(-30px) rotate(-18deg); opacity: 0; } }
+  @keyframes salirRegalo { to { opacity: 1; transform: scale(1) translateY(0); } }
+</style>
+</head>
+<body>
+<div class="pantalla" id="pantalla">
+  <canvas id="fondo"></canvas>
+  <canvas id="fuegos"></canvas>
+  <div class="guirnalda" id="guirnalda"></div>
+
+  <!-- ESCENA 0 -->
+  <section class="esc" id="e0" data-dur="5000">
+    <svg class="circ-draw" viewBox="0 0 800 1200" preserveAspectRatio="none" aria-hidden="true">
+      <path class="dib" pathLength="1" d="M0 100 H200 L240 50 H550"></path>
+      <path class="dib" pathLength="1" d="M800 100 H600 L560 50 H250"></path>
+      <path class="dib" pathLength="1" d="M0 1100 H220 L260 1150 H580"></path>
+      <circle class="nod" style="--d:1" cx="200" cy="100" r="6"></circle>
+      <circle class="nod" style="--d:2" cx="600" cy="100" r="6"></circle>
+    </svg>
+    <div class="centro">
+      <p class="consola"><span class="tipeo">&gt; iniciando saludo.exe</span><b class="cursor">_</b></p>
+      <h2 class="uni">UNIFRANZ</h2>
+      <p class="sub">INGENIERÍA DE SISTEMAS</p>
+    </div>
+  </section>
+
+  <!-- ESCENA 1 -->
+  <section class="esc" id="e1" data-dur="6000">
+    <div class="centro">
+      <div class="insignia"><div class="anillo"></div><div class="logo" data-lobo></div></div>
+      <h2 class="lobo-t">LOBO DE SISTEMAS</h2>
+      <span class="pill">UNIFRANZ</span>
+    </div>
+  </section>
+
+  <!-- ESCENA 2 -->
+  <section class="esc" id="e2" data-dur="6000">
+    <div class="arboles-container">
+      <div class="arbol" data-arbol></div>
+      <div class="arbol" data-arbol></div>
+    </div>
+    <div class="centro">
+      <h1 class="tit" id="tit" aria-label="¡Feliz Navidad!"></h1>
+      <p class="deseo">de parte de sus estudiantes</p>
+    </div>
+  </section>
+
+  <!-- ESCENA 3 -->
+  <section class="esc" id="e3" data-dur="11000">
+    <span class="flota f1">❄️</span><span class="flota f2">🎁</span><span class="flota f3">🎄</span><span class="flota f4">❄️</span>
+    <div class="centro">
+      <div class="card-msg">
+        <h2 class="nombre">Ingeniero <em>Juan</em></h2>
+        <div class="linea"></div>
+        <p class="msg m1">En esta Navidad queremos agradecerle por compartir sus <b>conocimientos</b>,</p>
+        <p class="msg m2">su <b>paciencia</b> y su <b>dedicación</b>.</p>
+        <p class="msg m3">Le deseamos mucha felicidad, salud</p>
+        <p class="msg m4">y éxitos en el próximo año. 🎉</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ESCENA 4 -->
+  <section class="esc" id="e4" data-dur="11000">
+    <div class="rayos"></div>
+    <div class="regalo-g">
+      <div class="tapa-g"><div class="cinta-g"></div></div>
+      <div class="cuerpo-g"><div class="cinta-g"></div></div>
+    </div>
+    <div class="almohada" id="almohada"></div>
+    <div class="info">
+      <h4>Un detalle de sus estudiantes</h4>
+      <p>Almohada de cuello con diseño del Lobo de Sistemas para un gran descanso.</p>
+      <div class="qr"><canvas id="qr" width="120" height="120"></canvas><span>📱 Escanéame</span></div>
+    </div>
+  </section>
+
+  <!-- ESCENA 5 -->
+  <section class="esc" id="e5" data-dur="9000">
+    <div class="centro">
+      <div class="mini"><div class="anillo"></div><div class="logo" data-lobo></div></div>
+      <p class="fin1">Con cariño, <em>sus estudiantes</em></p>
+      <p class="fin2">Ingeniería de Sistemas – UNIFRANZ</p>
+      <p class="fin3">NAVIDAD 2026</p>
+      <div class="paleta"><i style="--c:#0B2E5B"></i><i style="--c:#F97316"></i><i style="--c:#0E6BA8"></i><i style="--c:#15803d"></i><i style="--c:#e32636"></i></div>
+    </div>
+  </section>
+
+  <!-- INICIO -->
+  <div class="inicio" id="inicio">
+    <div>
+      <h1>🐺 Feliz Navidad <em>2026</em></h1>
+      <p style="color: #f1f8f3; margin-bottom: 24px; font-size: 0.88rem;">Lobo de Sistemas · UNIFRANZ · Animación vertical optimizada</p>
+      <button class="btn-g" id="conMusica">▶ Reproducir con música</button>
+      <button class="btn-g sec" id="sinMusica">Sin música</button>
+    </div>
+  </div>
+
+  <button class="btn-g repetir" id="repetir">↻ Ver de nuevo</button>
+
+  <div class="controles" id="controles">
+    <button id="bPlay" title="Pausar">▶</button>
+    <div class="barra" id="barra"><b id="prog"></b></div>
+    <span class="tiempo" id="tiempo">0:00 / 0:48</span>
+    <button id="bSonido" title="Música">🔊</button>
+    <button id="bPantalla" title="Pantalla completa">⛶</button>
+  </div>
+</div>
+
+<script>
+/* ============ Piezas SVG ============ */
+const LOBO = `<svg viewBox="0 0 200 200">
+<path d="M34 96 L44 26 L92 64 Z" fill="#0E6BA8"/><path d="M166 96 L156 26 L108 64 Z" fill="#0E6BA8"/>
+<path d="M50 80 L54 46 L78 64 Z" fill="#ff8c00"/><path d="M150 80 L146 46 L122 64 Z" fill="#ff8c00"/>
+<path d="M28 112 Q28 62 100 60 Q172 62 172 112 Q172 172 100 188 Q28 172 28 112Z" fill="#0E6BA8"/>
+<path d="M100 96 Q60 102 50 130 Q58 172 100 184 Q142 172 150 130 Q140 102 100 96Z" fill="#fff"/>
+<path d="M28 130 Q40 118 58 124 Q50 150 62 168 Q36 160 28 130Z" fill="#0B2E5B" opacity=".35"/>
+<path d="M172 130 Q160 118 142 124 Q150 150 138 168 Q164 160 172 130Z" fill="#0B2E5B" opacity=".35"/>
+<g class="ojos">
+<ellipse cx="70" cy="114" rx="15" ry="11" fill="#fff" stroke="#0B2E5B" stroke-width="3"/><ellipse cx="130" cy="114" rx="15" ry="11" fill="#fff" stroke="#0B2E5B" stroke-width="3"/>
+<circle cx="72" cy="114" r="7" fill="#ff8c00"/><circle cx="128" cy="114" r="7" fill="#ff8c00"/>
+<circle cx="72" cy="114" r="3.4" fill="#0B2E5B"/><circle cx="128" cy="114" r="3.4" fill="#0B2E5B"/>
+<circle cx="74" cy="111" r="1.6" fill="#fff"/><circle cx="130" cy="111" r="1.6" fill="#fff"/></g>
+<path d="M52 98 Q68 90 86 98" stroke="#0B2E5B" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M148 98 Q132 90 114 98" stroke="#0B2E5B" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M88 142 Q100 134 112 142 Q100 156 88 142Z" fill="#0B2E5B"/><path d="M100 150 V158" stroke="#0B2E5B" stroke-width="3"/>
+<path d="M76 158 Q100 182 124 158 Q100 166 76 158Z" fill="#0B2E5B"/><path d="M90 168 Q100 184 110 168 Q100 172 90 168Z" fill="#ff8c00"/>
+<g class="gorro"><path d="M42 78 Q50 22 112 16 Q154 16 166 62 L160 80 Z" fill="#e32636"/>
+<path d="M60 60 Q80 36 112 32" stroke="#fca5a5" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/>
+<rect x="32" y="68" width="136" height="24" rx="12" fill="#fff"/><circle class="pompon" cx="166" cy="64" r="12" fill="#fff"/></g></svg>`;
+
+const ARBOL = `<svg viewBox="0 0 120 175">
+<rect x="50" y="145" width="20" height="24" fill="#6b3f1d"/>
+<polygon points="60,18 106,78 14,78" fill="#16a34a"/><polygon points="60,46 114,112 6,112" fill="#15803d"/><polygon points="60,76 120,150 0,150" fill="#166534"/>
+<circle class="l" cx="50" cy="60" r="3.6" fill="#e32636"/><circle class="l" cx="70" cy="70" r="3.6" fill="#fff"/>
+<circle class="l" cx="40" cy="96" r="3.8" fill="#ffd700"/><circle class="l" cx="78" cy="100" r="3.8" fill="#e32636"/><circle class="l" cx="60" cy="88" r="3.4" fill="#fff"/>
+<circle class="l" cx="28" cy="132" r="4" fill="#fff"/><circle class="l" cx="60" cy="125" r="4" fill="#e32636"/><circle class="l" cx="94" cy="134" r="4" fill="#ffd700"/>
+<polygon class="estrella" points="60,0 64,10 75,10 66,17 69,28 60,21 51,28 54,17 45,10 56,10" fill="#ffd700"/></svg>`;
+
+const ALMOHADA = `<svg viewBox="0 0 240 210">
+<defs><pattern id="patron" width="24" height="24" patternUnits="userSpaceOnUse">
+<path d="M0 12 H8 L12 6 H24" stroke="#ff8c00" stroke-width="1" fill="none" opacity=".6"/><circle cx="12" cy="6" r="1.6" fill="#ff8c00" opacity=".7"/>
+<text x="3" y="22" font-size="6" fill="#0E6BA8" opacity=".9" font-family="monospace">0101</text></pattern>
+<linearGradient id="brillo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<clipPath id="recorte"><path d="M46 150 Q46 38 120 38 Q194 38 194 150" fill="none" stroke="#000" stroke-width="58"></path></clipPath></defs>
+<path d="M46 150 Q46 38 120 38 Q194 38 194 150" fill="none" stroke="#0B2E5B" stroke-width="58" stroke-linecap="round"/>
+<rect width="240" height="210" fill="url(#patron)" clip-path="url(#recorte)"/>
+<path d="M46 150 Q46 38 120 38 Q194 38 194 150" fill="none" stroke="url(#brillo)" stroke-width="18" stroke-linecap="round" transform="translate(0,-14)" opacity=".55"/>
+<path d="M46 128 V150" stroke="#ff8c00" stroke-width="58" stroke-linecap="round"/><path d="M194 128 V150" stroke="#ff8c00" stroke-width="58" stroke-linecap="round"/>
+<text x="46" y="160" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Arial Black,Arial,sans-serif">UNIFRANZ</text>
+<text x="194" y="160" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Arial Black,Arial,sans-serif">UNIFRANZ</text>
+<rect x="106" y="146" width="28" height="18" rx="4" fill="#111"/><rect x="112" y="150" width="16" height="10" rx="2" fill="#333"/>
+<rect x="196" y="82" width="30" height="14" rx="2" fill="#e32636" transform="rotate(18 211 89)"/>
+<text x="211" y="92" font-size="7" fill="#fff" text-anchor="middle" font-weight="700" transform="rotate(18 211 89)">LoboSist</text>
+<text x="82" y="82" font-size="14" fill="#fff">❄</text><text x="150" y="70" font-size="12" fill="#ffd700">✦</text></svg>`;
+
+document.querySelectorAll("[data-lobo]").forEach(e => e.innerHTML = LOBO);
+document.querySelectorAll("[data-arbol]").forEach(e => e.innerHTML = ARBOL);
+document.getElementById("almohada").innerHTML = ALMOHADA;
+
+/* Guirnalda */
+const gu = document.getElementById("guirnalda");
+const COL = ["#e32636","#22c55e","#ffd700","#fff","#ff8c00","#22c55e"];
+for (let i = 0; i < 18; i++) gu.insertAdjacentHTML("beforeend", `<i style="--c:${COL[i % COL.length]};--n:${i}"></i>`);
+
+/* Título letra por letra */
+const tit = document.getElementById("tit");
+let idx = 0;
+["¡Feliz", "Navidad!"].forEach(p => {
+  const fila = document.createElement("div"); fila.className = "fila";
+  [...p].forEach(ch => { const s = document.createElement("span"); s.textContent = ch; s.style.setProperty("--i", idx++); fila.appendChild(s); });
+  tit.appendChild(fila);
+});
+
+/* QR decorativo */
+(function () {
+  const cv = document.getElementById("qr"), c = cv.getContext("2d"), N = 25, t = cv.width / N;
+  let s = 2026; const az = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  c.fillStyle = "#fff"; c.fillRect(0, 0, 120, 120); c.fillStyle = "#0B2E5B";
+  const bus = (x, y) => (x < 8 && y < 8) || (x >= N - 8 && y < 8) || (x < 8 && y >= N - 8);
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) if (!bus(x, y) && az() > .52) c.fillRect(x * t, y * t, t, t);
+  const f = (ox, oy) => { c.fillStyle = "#0B2E5B"; c.fillRect(ox * t, oy * t, 7 * t, 7 * t); c.fillStyle = "#fff"; c.fillRect((ox + 1) * t, (oy + 1) * t, 5 * t, 5 * t); c.fillStyle = "#ff8c00"; c.fillRect((ox + 2) * t, (oy + 2) * t, 3 * t, 3 * t); };
+  f(0, 0); f(N - 7, 0); f(0, N - 7);
+})();
+
+/* ============ Canvas: binario + nieve vertical ============ */
+const pantalla = document.getElementById("pantalla");
+const cf = document.getElementById("fondo"), cx = cf.getContext("2d");
+const cg = document.getElementById("fuegos"), gx = cg.getContext("2d");
+let W, H, bin = [], nieve = [], chispas = [], conf = [];
+function ajustar() {
+  W = cf.width = cg.width = pantalla.clientWidth;
+  H = cf.height = cg.height = pantalla.clientHeight;
+  const cols = Math.floor(W / 24);
+  bin = Array.from({ length: cols }, () => ({ y: Math.random() * H, v: .6 + Math.random() * 1.4 }));
+  nieve = Array.from({ length: Math.floor(W / 8) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: 1 + Math.random() * 2.5, v: .4 + Math.random() * 1.2, f: Math.random() * 6.28 }));
+}
+addEventListener("resize", ajustar); ajustar();
+
+const COLS = ["#e32636", "#22c55e", "#ff8c00", "#fff", "#ffd700", "#0E6BA8"];
+function fuego(x, y) {
+  const col = COLS[(Math.random() * COLS.length) | 0];
+  for (let i = 0; i < 60; i++) { const a = Math.random() * 6.28, f = 1 + Math.random() * 4; chispas.push({ x, y, vx: Math.cos(a) * f, vy: Math.sin(a) * f, vida: 60 + Math.random() * 25, col }); }
+}
+function confeti(x, y) {
+  for (let i = 0; i < 120; i++) { const a = Math.random() * 6.28, f = 2.5 + Math.random() * 7; conf.push({ x, y, vx: Math.cos(a) * f, vy: Math.sin(a) * f - 5, w: 5 + Math.random() * 5, h: 3 + Math.random() * 5, r: Math.random() * 6, vr: (Math.random() - .5) * .4, col: COLS[(Math.random() * COLS.length) | 0], vida: 120 + Math.random() * 50 }); }
+}
+
+function dibujar(t, avanza) {
+  cx.clearRect(0, 0, W, H);
+  const fs = 11; cx.font = fs + "px monospace";
+  bin.forEach((g, i) => {
+    const d = Math.random() > .5 ? "1" : "0";
+    cx.fillStyle = "rgba(34,197,94,.18)"; cx.fillText(d, i * 24 + 4, g.y);
+    if (avanza) { g.y += g.v; if (g.y > H + 20) { g.y = -20; g.v = .6 + Math.random() * 1.4; } }
+  });
+  cx.fillStyle = "rgba(255,255,255,.85)";
+  nieve.forEach(n => {
+    if (avanza) { n.y += n.v; n.x += Math.sin(t / 900 + n.f) * .4; if (n.y > H + 5) { n.y = -5; n.x = Math.random() * W; } }
+    cx.beginPath(); cx.arc(n.x, n.y, n.r, 0, 6.28); cx.fill();
+  });
+
+  gx.clearRect(0, 0, W, H);
+  for (let i = chispas.length - 1; i >= 0; i--) {
+    const p = chispas[i];
+    if (avanza) { p.vy += .05; p.vx *= .985; p.x += p.vx; p.y += p.vy; p.vida--; }
+    gx.globalAlpha = Math.max(p.vida / 80, 0); gx.fillStyle = p.col;
+    gx.beginPath(); gx.arc(p.x, p.y, 2.2, 0, 6.28); gx.fill();
+    if (p.vida <= 0) chispas.splice(i, 1);
+  }
+  for (let i = conf.length - 1; i >= 0; i--) {
+    const c = conf[i];
+    if (avanza) { c.vy += .12; c.x += c.vx; c.y += c.vy; c.r += c.vr; c.vida--; }
+    gx.save(); gx.translate(c.x, c.y); gx.rotate(c.r); gx.globalAlpha = Math.max(c.vida / 100, 0); gx.fillStyle = c.col; gx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h); gx.restore();
+    if (c.vida <= 0 || c.y > H + 20) conf.splice(i, 1);
+  }
+  gx.globalAlpha = 1;
+}
+
+/* ============ Música (Jingle Bells) ============ */
+let ac = null, master = null, sonidoOn = true;
+const NOTA = { E: 659.25, G: 783.99, C: 523.25, D: 587.33, F: 698.46 };
+const MEL = [["E",1],["E",1],["E",2],["E",1],["E",1],["E",2],["E",1],["G",1],["C",1.5],["D",.5],["E",4],
+             ["F",1],["F",1],["F",1.5],["F",.5],["F",1],["E",1],["E",1],["E",.5],["E",.5],["E",1],["D",1],["D",1],["E",1],["D",2],["G",2]];
+function musicaIniciar() {
+  try {
+    if (ac) ac.close();
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain(); master.gain.value = sonidoOn ? .14 : 0; master.connect(ac.destination);
+    let when = ac.currentTime + .1; const beat = .3;
+    for (let loop = 0; loop < 7; loop++) MEL.forEach(([n, b]) => {
+      const d = b * beat, f = NOTA[n];
+      [[f, "triangle", 1], [f * 2, "sine", .3]].forEach(([fr, tipo, vol]) => {
+        const o = ac.createOscillator(), g = ac.createGain();
+        o.type = tipo; o.frequency.value = fr;
+        g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(vol, when + .02); g.gain.exponentialRampToValueAtTime(.001, when + d * .95);
+        o.connect(g); g.connect(master); o.start(when); o.stop(when + d);
+      });
+      when += d;
+    });
+  } catch (e) { ac = null; }
+}
+
+/* ============ Línea de tiempo ============ */
+const ESC = [...document.querySelectorAll(".esc")];
+const DUR = ESC.map(e => +e.dataset.dur);
+const TOTAL = DUR.reduce((a, b) => a + b, 0);
+const INI = DUR.map((_, i) => DUR.slice(0, i).reduce((a, b) => a + b, 0));
+const EVENTOS = [
+  { e: 2, at: 700, fn: () => { confeti(W / 2, H * .4); } },
+  { e: 4, at: 2800, fn: () => { confeti(W * .5, H * .45); } },
+  { e: 5, at: 300, fn: () => { fuego(W * .3, H * .3); fuego(W * .7, H * .25); } },
+  { e: 5, at: 3000, fn: () => { confeti(W / 2, H * .55); } }
+];
+let t = 0, reproduce = false, actual = -1, ult = 0, terminado = false, sigFuego = 0, hechos = new Set();
+
+const $ = id => document.getElementById(id);
+const bPlay = $("bPlay"), prog = $("prog"), tiempo = $("tiempo"), repetir = $("repetir");
+
+function activar(i) {
+  ESC.forEach(e => e.classList.remove("activa"));
+  void pantalla.offsetWidth;
+  ESC[i].classList.add("activa");
+  actual = i; hechos.clear();
+}
+function fmt(ms) { const s = Math.floor(ms / 1000); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function setPlay(v) {
+  reproduce = v; bPlay.textContent = v ? "⏸" : "▶";
+  pantalla.classList.toggle("pausa", !v && !terminado);
+  if (ac) v ? ac.resume() : ac.suspend();
+}
+function reiniciar(desde = 0) {
+  t = desde; terminado = false; repetir.classList.remove("ver"); actual = -1; chispas = []; conf = [];
+  if (sonidoOn || ac) musicaIniciar();
+  setPlay(true);
+}
+function frame(now) {
+  const dt = Math.min(now - ult, 100); ult = now;
+  if (reproduce) {
+    t += dt;
+    if (t >= TOTAL) {
+      t = TOTAL - 1; terminado = true; setPlay(false); repetir.classList.add("ver");
+    }
+  }
+  let i = ESC.length - 1; while (i > 0 && t < INI[i]) i--;
+  if (i !== actual) activar(i);
+  EVENTOS.forEach((ev, k) => { if (ev.e === actual && t - INI[actual] >= ev.at && !hechos.has(k)) { hechos.add(k); ev.fn(); } });
+  if (reproduce && actual === 5 && now > sigFuego) { fuego(W * (.2 + Math.random() * .6), H * (.2 + Math.random() * .4)); sigFuego = now + 650 + Math.random() * 500; }
+  prog.style.width = (t / TOTAL * 100) + "%";
+  tiempo.textContent = fmt(t) + " / " + fmt(TOTAL);
+  dibujar(now, reproduce || terminado);
+  requestAnimationFrame(frame);
+}
+
+/* ============ Controles ============ */
+function comenzar(conMusica) {
+  sonidoOn = conMusica; $("bSonido").textContent = conMusica ? "🔊" : "🔇";
+  $("inicio").classList.add("fuera");
+  if (conMusica) musicaIniciar();
+  t = 0; actual = -1; setPlay(true);
+}
+$("conMusica").onclick = () => comenzar(true);
+$("sinMusica").onclick = () => comenzar(false);
+bPlay.onclick = () => { if (terminado) reiniciar(0); else setPlay(!reproduce); };
+repetir.onclick = () => reiniciar(0);
+$("bSonido").onclick = e => {
+  sonidoOn = !sonidoOn; e.target.textContent = sonidoOn ? "🔊" : "🔇";
+  if (!ac && sonidoOn) { musicaIniciar(); if (!reproduce) ac && ac.suspend(); }
+  if (master) master.gain.value = sonidoOn ? .14 : 0;
+};
+
+let tm; pantalla.addEventListener("touchstart", () => { pantalla.classList.add("ver"); clearTimeout(tm); tm = setTimeout(() => pantalla.classList.remove("ver"), 3000); }, { passive: true });
+
+activar(0); ult = performance.now(); requestAnimationFrame(frame);
+</script>
+</body>
+</html>
